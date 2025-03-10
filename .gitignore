@@ -14,3 +14,6 @@ desktop.ini
 #notebook
 .ipynb_checkpoints/
 notebooks/.ipynb_checkpoints
+
+# python cache
+__pycache__
