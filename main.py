@@ -5,12 +5,13 @@ import src.categories as cg
 
 
 if __name__ == "__main__":
-    c.extract_customers()
-    c.transform_customers()
-    c.load_customers()
-    p.extract_products()
+    df_customers= c.extract_customers()
+    df_customers = c.transform_customers(df_customers)
+    c.load_customers(df_customers)
+    '''p.extract_products()
     p.transform_products()
     p.load_products()
     cg.extract_categories()
     cg.transform_categories()
-    cg.load_categories()
+    cg.load_categories()'''
+
