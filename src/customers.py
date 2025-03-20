@@ -16,12 +16,13 @@ port = os.getenv("port")
 
 
 def extract():
+    print("---EXTRACT CUSTOMERS---")
     df = common.readfile()
     return df
 
 
 def transform(df):
-    print("Transformation Data")
+    print("---TRANSFORM CUSTOMERS---")
     df = common.drop_duplicates(df)
     df = common.check_null(df, ["customer_id"])
     df = common.format_string(df, ["region", "city"])
@@ -31,7 +32,7 @@ def transform(df):
 
 
 def load(df):
-    print("Load Data")
+    print("---LOAD CUSTOMERS---")
     df["last_update"] = datetime.datetime.now().strftime("%Y_%m_%d_%H:%M:%S")
     with psycopg.connect(host=host, dbname=dbname, user=user, password=password, port=port) as conn:
         with conn.cursor() as cur:
@@ -72,7 +73,7 @@ def load(df):
 
 
 def integrate_city_region():
-    print("Integrate Data")
+    print("---INTEGRATE CITY & REGION---")
     with psycopg.connect(host=host, dbname=dbname, user=user, password=password, port=port) as conn:
         with conn.cursor() as cur:
             sql = """
@@ -81,9 +82,9 @@ def integrate_city_region():
             WHERE region = 'NaN' OR city = 'NaN';
             """
             cur.execute(sql)
-            print(f"List of NaN records: {cur.rowcount},they are: ")
-            for record in cur:
-                print(record)
+            #print(f"List of NaN records: {cur.rowcount},they are: ")
+            #for record in cur:
+             #   print(record)
 
             sql = f"""
               UPDATE customers AS c1 
@@ -98,8 +99,8 @@ def integrate_city_region():
 
             cur.execute(sql)
             updated_records = cur.fetchall()
-            for record in updated_records:
-                print(record)
+            #for record in updated_records:
+             #   print(record)
             sql = f"""
             UPDATE customers AS c1 
             SET city = c2.city,
@@ -113,9 +114,9 @@ def integrate_city_region():
 
             cur.execute(sql)
 
-            print(f"List of updated records:{cur.rowcount}, they are :")
-            for record in cur:
-                print(record)
+            #print(f"List of updated records:{cur.rowcount}, they are :")
+            #for record in cur:
+             #   print(record)
 
             print("Updated successfully!")
             conn.commit()

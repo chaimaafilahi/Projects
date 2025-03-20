@@ -16,19 +16,19 @@ password = os.getenv("password")
 port = os.getenv("port")
 
 def extract():
-    print(" EXTRACT orders ")
+    print("---EXTRACT ORDERS--- ")
     df = common.readfile()
     return df
 
 def transform(df):
-    print("TRANSFORM orders")
+    print("---TRANSFORM ORDERS---")
     df = common.drop_duplicates(df)
     df = common.check_null(df, ["order_id", "customer_id"])
     return df
 
 
 def load(df):
-    print("LOAD orders")
+    print("---LOAD ORDERS---")
     df["last_updated"] = datetime.datetime.now().isoformat(sep=" ", timespec="seconds")
     df["order_purchase_timestamp"] = pd.to_datetime(df["order_purchase_timestamp"])
     df["order_delivered_customer_date"] = pd.to_datetime(df["order_delivered_customer_date"])

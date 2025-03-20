@@ -34,9 +34,9 @@ if __name__ == "__main__":
             df_products = p.extract()
             print("First you need to clean the file, for execute ETL")
             df_products = p.raw_load(df_products)
-            df_products1 = p.extract()
-            df_products1 = p.transform(df_products1)
-            p.load(df_products1)
+            df_products = p.extract()
+            df_products = p.transform(df_products)
+            p.load(df_products)
         elif response == 6:
             df_orders = o.extract()
             df_orders = o.transform(df_orders)

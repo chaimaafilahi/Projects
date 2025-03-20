@@ -15,19 +15,19 @@ password = os.getenv("password")
 port = os.getenv("port")
 
 def extract():
-    print("EXTRACT oder_products")
+    print("---EXTRACT ORDERS_PRODUCTS---")
     df = common.readfile()
     return df
 
 def transform(df):
-    print("TRANSFORM order_products")
+    print("---TRANSFORM ORDERS_PRODUCTS---")
     df = common.drop_duplicates(df)
     df = common.check_null(df, ["order_id", "product_id", "seller_id"])
     return df
 
 
 def load(df):
-    print("LOAD order_products")
+    print("---LOAD ORDERS_PRODUCTS---")
     df["last_updated"] = datetime.datetime.now().isoformat(sep=" ", timespec="seconds")
 
     with psycopg.connect(host=host, dbname=dbname, user=user, password=password, port=port) as conn:

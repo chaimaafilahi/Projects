@@ -16,11 +16,13 @@ port = os.getenv("port")
 
 
 def extract():
+    print("---EXTRACT CATEGORIES---")
     df = common.readfile()
     return df
 
 
 def load_categories(df):
+    print("---LOAD CATEGORIES---")
     df["last_updated"] = datetime.datetime.now().isoformat(sep=" ", timespec="seconds")
     with psycopg.connect(host=host, dbname=dbname, user=user, password=password, port=port) as conn:
         with conn.cursor() as cur:
@@ -33,7 +35,12 @@ def load_categories(df):
             """
             try:
                 cur.execute(sql)
-            # Inserimento report nel database
+                sql = f"""
+                                     INSERT INTO categories (category_name, last_updated) 
+                                     VALUES ('other','{datetime.datetime.now().isoformat(sep=" ", timespec="seconds")}')
+                                    """
+                cur.execute(sql)
+
             except psycopg.errors.DuplicateTable as ex:
                 print(f"ERROR: {ex}")
                 conn.commit()
@@ -166,6 +173,7 @@ def transform(df, column):
     return df
 
 def load(df):
+    print("---LOAD CATEGORIES---")
     categories_list = df["category_name"].unique()
     categories_list = pd.DataFrame(categories_list)
     print(categories_list)
