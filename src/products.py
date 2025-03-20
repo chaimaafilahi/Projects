@@ -31,6 +31,7 @@ def transform(df):
 
 
 def load(df):
+    df["last_updated"] = datetime.datetime.now().isoformat(sep=" ", timespec="seconds")
     with psycopg.connect(host=host, dbname=dbname, user=user, password=password, port=port) as conn:
         with conn.cursor() as cur:
             sql = """
@@ -40,7 +41,8 @@ def load(df):
                name_length INTEGER,
                description_length INTEGER,
                imgs_qty INTEGER,
-               last_updated TIMESTAMP
+               last_updated TIMESTAMP,
+               FOREIGN KEY (fk_category) REFERENCES categories (pk_category)
                );
                """
             cur.execute(sql)
@@ -61,8 +63,8 @@ def raw_load(df):
     # TODO rimuovere last_update
     category.transform(df, "category")
     convert_numbers(df)
-    df["last_updated"] = datetime.datetime.now().isoformat(sep=" ", timespec="seconds")
-    df = df[["product_id", "category_name", "product_name_lenght", "product_description_lenght", "product_photos_qty","last_updated"]]
+    #df["last_updated"] = datetime.datetime.now().isoformat(sep=" ", timespec="seconds")
+    df = df[["product_id", "category_name", "product_name_lenght", "product_description_lenght", "product_photos_qty"]]
     with psycopg.connect(host=host, dbname=dbname, user=user, password=password, port=port) as conn:
         with conn.cursor() as cur:
             sql = """
@@ -71,18 +73,19 @@ def raw_load(df):
             fk_category VARCHAR,
             name_length INTEGER,
             description_length INTEGER,
-            imgs_qty INTEGER,
-            last_updated TIMESTAMP
+            imgs_qty INTEGER
+            
             );
             """
+            #last_updated TIMESTAMP
             cur.execute(sql)
             conn.commit()
             sql = """
                 INSERT INTO products
-                (pk_product, fk_category,name_length, description_length, imgs_qty, last_updated)
-                VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT (pk_product) DO UPDATE SET 
-                (fk_category,name_length, description_length, imgs_qty, last_updated) = (EXCLUDED.fk_category,
-                EXCLUDED.name_length,  EXCLUDED.description_length, EXCLUDED.imgs_qty, EXCLUDED.last_updated);
+                (pk_product, fk_category,name_length, description_length, imgs_qty)
+                VALUES (%s, %s, %s, %s, %s) ON CONFLICT (pk_product) DO UPDATE SET 
+                (fk_category,name_length, description_length, imgs_qty) = (EXCLUDED.fk_category,
+                EXCLUDED.name_length,  EXCLUDED.description_length, EXCLUDED.imgs_qty);
                 """
 
             common.loading_bar(df, cur, sql)
@@ -96,6 +99,9 @@ def raw_load(df):
             # creo df
             col_names = [desc[0] for desc in cur.description]
             df_update = pd.DataFrame(rows, columns=col_names)
+            sql ="""DROP TABLE products;"""
+            cur.execute(sql)
+            conn.commit()
     common.save_processed(df_update)
     return df_update
 
@@ -111,13 +117,12 @@ def null_categories():
             cur.execute(sql)
             sql = f"""
                           UPDATE products AS  p
-                          SET fk_category = c.pk_category, 
-                          last_updated = '{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+                          SET fk_category = c.pk_category
                           FROM categories AS c 
                           WHERE fk_category IS NULL AND c.category_name = 'other'
                           RETURNING *;
                          """
-
+            #last_updated = '{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
             cur.execute(sql)
             updated_records = cur.fetchall()
             print("----AGGIORNATI NULL----")
@@ -132,13 +137,12 @@ def change_category():
         with conn.cursor() as cur:
             sql = f"""
                           UPDATE products AS  p
-                          SET fk_category = c.pk_category, 
-                          last_updated = '{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+                          SET fk_category = c.pk_category
                           FROM categories AS c 
                           WHERE p.fk_category = c.category_name 
                           RETURNING *;
                          """
-
+            #last_updated = '{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
             cur.execute(sql)
             updated_records = cur.fetchall()
             print("----AGGIORNATI CHANGE----")
@@ -150,11 +154,10 @@ def change_category():
 def main():
     #df = extract()
     #df = raw_load(df)
-    print("QUI")
     #common.save_processed(df)
     df = extract()
     df = transform(df)
-    #load(df)
+    load(df)
 
 
 
